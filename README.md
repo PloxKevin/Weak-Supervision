@@ -1,2 +1,2 @@
-# Weak Supervision
+# Weak-Supervision
  Weak Supervision Pipeline
