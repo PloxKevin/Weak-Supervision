@@ -41,8 +41,8 @@ class PriorDataset(Dataset):
         return self.examples.shape[0]
 
     def __getitem__(self, item):
-        input_img = self.examples[item, 1:].reshape(28, 28) / 255.
-        # input_img[9:19, 9:19] = 0.5
+        input_img = self.examples[item, 1:].reshape(1,28, 28) / 255.
+        input_img[9:19, 9:19] = 0.5
 
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         input_img = torch.from_numpy(np.expand_dims(input_img, 0))

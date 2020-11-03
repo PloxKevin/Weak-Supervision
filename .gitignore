@@ -126,3 +126,4 @@ dmypy.json
 datasets/mnist_combined.csv
 datasets/mnist_test.csv
 datasets/mnist_train.csv
+runs/

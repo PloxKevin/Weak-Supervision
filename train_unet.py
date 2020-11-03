@@ -16,7 +16,8 @@ from data_loader import *
 from nets_unet import *
 from util import *
 
-
+experiment_csv = "datasets/split/60.csv"
+experiment_pre = "preselection_top1_60.npy"
 mode = 'wo_13'
 seed = 1
 # torch.backends.cudnn.benchmark = True
@@ -42,7 +43,7 @@ writer = SummaryWriter()
 road_set = PriorDataset()
 road_loader = DataLoader(road_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
 road_iter = iter(road_loader)
-train_full_set = PartialDataset('datasets/mnist_test.csv', 'datasets/preselection_top4.npy')
+train_full_set = PartialDataset(experiment_csv, experiment_pre)
 train_size = int(0.8 * len(train_full_set))
 val_size = len(train_full_set) - train_size
 train_set, val_set = torch.utils.data.random_split(train_full_set, [train_size, val_size])
