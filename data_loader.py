@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 experiment = "datasets/split/60.csv"
 
 class PartialDataset(Dataset):
-    def __init__(self, mnist_dir):
-        self.examples = np.loadtxt(experiment, delimiter=",")
+    def __init__(self, mnist_dir, pres): #Erros coming from this part
+        self.examples = np.genfromtxt(pres, dtype =int, delimiter=",",usecols=range(1))
         self.pre_selections = np.load(mnist_dir)
         print(self.pre_selections.shape)
     def __len__(self):

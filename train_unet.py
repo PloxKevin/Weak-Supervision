@@ -17,7 +17,7 @@ from nets_unet import *
 from util import *
 
 experiment_csv = "datasets/split/60.csv"
-experiment_pre = "preselection_top1_60.npy"
+experiment_pre = "datasets/split/preselection_top1_60.npy"
 mode = 'wo_13'
 seed = 1
 # torch.backends.cudnn.benchmark = True
