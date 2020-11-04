@@ -2,6 +2,7 @@ import torch
 from skimage import io, transform
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+import matplotlib.pyplot as plt
 
 experiment = "datasets/split/60.csv"
 
@@ -15,10 +16,12 @@ class PartialDataset(Dataset):
         return self.examples.shape[0]
     def __getitem__(self, item): #item = index
         input_img = self.examples[item, 1:].reshape(1, 28, 28) / 255.
-        #(1,28,28) here or in the training
+
         input_img[9:19, 9:19] = 0.5
         pre_sele_img = self.pre_selections[item]
-
+        plt.figure()
+        plt.imshow(np.squeeze(pre_sele_img))
+        plt.show()
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         pre_sele_img =  transform.resize(pre_sele_img, (64, 64), preserve_range=True)
 
@@ -44,6 +47,9 @@ class PriorDataset(Dataset):
         input_img = self.examples[item, 1:].reshape(1,28, 28) / 255.
         input_img[9:19, 9:19] = 0.5
 
+        plt.figure()
+        plt.imshow(np.squeeze(input_img))
+        plt.show()
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         input_img = torch.from_numpy(np.expand_dims(input_img, 0))
 
@@ -56,11 +62,11 @@ class PriorDataset(Dataset):
 
 
 if __name__ == '__main__':
-    #dataset = PartialDataset('datasets/split/preselection_top1_60.npy')
+    dataset = PartialDataset('datasets/split/preselection_top8_60.npy')
 
-    #print(len(dataset))
-    #print(dataset[0]['input'])
-    #print(dataset[0]['pre_sele'])
+    print(len(dataset))
+    print(dataset[0]['input'])
+    print(dataset[0]['pre_sele'])
 
     dataset = PriorDataset()
     print(len(dataset))
