@@ -9,17 +9,15 @@ image_size = 28  # width and length
 no_of_different_labels = 10  # i.e. 0, 1, 2, 3, ..., 9
 image_pixels = image_size * image_size
 data_path = "datasets/"
-train_data = np.loadtxt(data_path + "mnist_test.csv",
+train_data = np.loadtxt(data_path + "mnist_combined.csv",
                         delimiter=",")
-test_data = np.loadtxt(data_path + "mnist_train.csv",
-                       delimiter=",")
 
 mask = np.ones([28, 28])
 mask[9:19, 9:19] = 0
 mask = mask > 0.5
 # msk  = msk.reshape(-1)
 
-np.random.shuffle(train_data)
+#np.random.shuffle(train_data)
 train_partial = train_data[:amount_images]
 train_prior = train_data[amount_images:2 * amount_images]
 # augment priors
