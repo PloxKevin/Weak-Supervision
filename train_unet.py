@@ -28,10 +28,9 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 
 
-
 with_msk_channel = False
 num_epochs = 30
-batch_size = 16
+batch_size = 5000
 restore = True
 num_labels = 5
 checkpoint_path = 'checkpoints/checkpoint_skipconnection_trainval_' + mode + '_seed_' + str(seed) +'.pth.tar'
