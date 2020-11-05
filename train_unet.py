@@ -30,9 +30,9 @@ torch.cuda.manual_seed(seed)
 
 with_msk_channel = False
 num_epochs = 30
-batch_size = 3000
+batch_size = 64
 restore = True
-num_labels = 10
+num_labels = 5
 checkpoint_path = 'checkpoints/checkpoint_skipconnection_trainval_' + mode + '_seed_' + str(seed) +'.pth.tar'
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter()
@@ -43,8 +43,8 @@ road_set = PriorDataset()
 road_loader = DataLoader(road_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
 road_iter = iter(road_loader)
 train_full_set = PartialDataset(experiment_csv, experiment_pre)
-train_size = int(0.8 * len(train_full_set))
-val_size = len(train_full_set) - train_size
+train_size = int(0.8 * len(train_full_set)) #we have custom training sizes
+val_size = len(train_full_set) - train_size #and val sizes. Apply this later.
 train_set, val_set = torch.utils.data.random_split(train_full_set, [train_size, val_size])
 train_loader = DataLoader(train_full_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
 val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
