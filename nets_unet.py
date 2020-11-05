@@ -184,7 +184,7 @@ def loss_function_road_layout(pred, gt):
 
 
 def loss_function_pre_selection(pred_map, map):
-    ignore_idx = 1. - (map.clone().detach().view(-1, 1) > 0.1)*(map.clone().detach().view(-1, 1) < 0.9)
+    ignore_idx = ~(map.clone().detach().view(-1, 1) > 0.1)*(map.clone().detach().view(-1, 1) < 0.9)
     ignore_idx = ignore_idx.float()
     detect_rate = torch.mean(ignore_idx)
     pred_map = pred_map.view(-1, 1)

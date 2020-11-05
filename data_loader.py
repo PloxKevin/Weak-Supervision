@@ -15,7 +15,7 @@ class PartialDataset(Dataset):
         assert self.examples.shape[0] == self.pre_selections.shape[0]
         return self.examples.shape[0]
     def __getitem__(self, item): #item = index
-        input_img = self.examples[item, 1:].reshape(1, 28, 28) / 255.
+        input_img = self.examples[item, 1:].reshape(28, 28) / 255.
 
         input_img[9:19, 9:19] = 0.5
         pre_sele_img = self.pre_selections[item]
@@ -44,7 +44,7 @@ class PriorDataset(Dataset):
         return self.examples.shape[0]
 
     def __getitem__(self, item):
-        input_img = self.examples[item, 1:].reshape(1,28, 28) / 255.
+        input_img = self.examples[item, 1:].reshape(28, 28) / 255.
         input_img[9:19, 9:19] = 0.5
 
         #plt.figure()
