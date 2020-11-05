@@ -19,9 +19,9 @@ class PartialDataset(Dataset):
 
         input_img[9:19, 9:19] = 0.5
         pre_sele_img = self.pre_selections[item]
-        plt.figure()
-        plt.imshow(np.squeeze(pre_sele_img))
-        plt.show()
+        #plt.figure()
+        #plt.imshow(np.squeeze(pre_sele_img))
+        #plt.show()
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         pre_sele_img =  transform.resize(pre_sele_img, (64, 64), preserve_range=True)
 
@@ -47,9 +47,9 @@ class PriorDataset(Dataset):
         input_img = self.examples[item, 1:].reshape(1,28, 28) / 255.
         input_img[9:19, 9:19] = 0.5
 
-        plt.figure()
-        plt.imshow(np.squeeze(input_img))
-        plt.show()
+        #plt.figure()
+        #plt.imshow(np.squeeze(input_img))
+        #plt.show()
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         input_img = torch.from_numpy(np.expand_dims(input_img, 0))
 

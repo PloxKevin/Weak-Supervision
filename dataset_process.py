@@ -46,9 +46,9 @@ for i in tqdm(range(img_masked.shape[0])):
         top_similar = np.argpartition(intersectionoverunion[i, :].copy(), -top_range)[-top_range:]
         target = img_prior[top_similar, :, :]
         target = np.mean(target, axis=0).astype(np.float32)
-        plt.figure()
-        plt.imshow(target)
-        plt.show()
+        #plt.figure()
+        #plt.imshow(target)
+        #plt.show()
         targets[top_ranges.index(top_range), i, :, :] = target
     # print(i)
 
