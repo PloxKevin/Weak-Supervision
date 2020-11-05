@@ -30,9 +30,9 @@ torch.cuda.manual_seed(seed)
 
 with_msk_channel = False
 num_epochs = 30
-batch_size = 5000
+batch_size = 3000
 restore = True
-num_labels = 5
+num_labels = 10
 checkpoint_path = 'checkpoints/checkpoint_skipconnection_trainval_' + mode + '_seed_' + str(seed) +'.pth.tar'
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter()
