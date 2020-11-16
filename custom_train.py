@@ -116,8 +116,10 @@ while epoch < num_epochs:
                     pred_road_1 = G(temp_road_input, phase == 'train')
 
                 loss_road_1 = loss_function_road_pred(pred_road, temp_map_input)
+              #  loss_road_2 = loss_function_pre_selection(pred_road, temp_style_tgt)
+              #  loss_road_3 = loss_function_road_layout(pred_road_1, temp_road)
                 loss_all = loss_road_1
-
+#TODO:FIND MORE INFO ABOUT LOSS ROADS!!!
 
                 if phase == 'train':
                     loss_all.backward()
@@ -139,7 +141,7 @@ while epoch < num_epochs:
             running_loss_0 = running_loss_0 / len(val_set)
 
 
-        print(phase, running_loss_0)
+        print(phase, running_loss_0, loss_road_1, loss_road_3)
         if phase == 'val':
             writer.add_scalar(phase+'_loss_road_0', loss_road_1.item(), (epoch+1) * len(train_set) / batch_size)
 
