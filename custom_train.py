@@ -16,7 +16,7 @@ validation_pre = "datasets/split/preselection_top1_30.npy"
 test_csv = "datasets/split/10.csv"
 test_pre = "datasets/split/preselection_top1_10.npy"
 
-seed = 1
+seed = 2
 # torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.deterministic = True
 np.random.seed(seed)
@@ -58,13 +58,13 @@ train_loader = DataLoader(train_full_set, batch_size=batch_size, shuffle=True, n
 val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
 dataloaders = {'train': train_loader, 'val': val_loader}
 
-G = vae_road_layout(with_msk_channel=with_msk_channel).to(device)
-bce_loss = nn.BCELoss()
-optimizerG = optim.Adam(G.parameters(), lr=0.0001, weight_decay=0.0001)
-schedulerG = lr_scheduler.StepLR(optimizerG, step_size=40, gamma=0.1)
+G = vae_road_layout(with_msk_channel=with_msk_channel).to(device) #G is the network. vae = variational autoencoder. It's just a type of network.
+#bce_loss = nn.BCELoss()
+optimizerG = optim.Adam(G.parameters(), lr=0.0001, weight_decay=0.0001) #adam algo
+schedulerG = lr_scheduler.StepLR(optimizerG, step_size=40, gamma=0.1) #learning with decaying rate.
 
 
-if restore:
+if restore: # in case the learning shuts down (unexpectedly)
     if os.path.isfile(checkpoint_path):
         state = torch.load(checkpoint_path)
         epoch = state['epoch']
@@ -94,9 +94,8 @@ while epoch < num_epochs:
 
         # Iterate over data.
         for i, temp_batch in enumerate(dataloaders[phase]):
-            temp_map_input = temp_batch['input'].float().to(device)
-
-            temp_style_tgt = temp_batch['pre_sele'].float().to(device)
+            temp_input_img = temp_batch['input'].float().to(device)
+            temp_ground_truth = temp_batch['pre_sele'].float().to(device) #pre is GT
 
             try:
                 temp_road = next(road_iter)['prior'].float().to(device)
@@ -104,44 +103,29 @@ while epoch < num_epochs:
                 road_iter = iter(road_loader)
                 temp_road = next(road_iter)['prior'].float().to(device)
 
-            temp_road_input = temp_road.detach().clone()
-            temp_road_input[:, :, 21:43, 21:43] = 0.5
-
             with torch.set_grad_enabled(phase == 'train'):
-                optimizerG.zero_grad()
+                optimizerG.zero_grad() #we need to set the gradients to zero before starting to do backpropragation because PyTorch accumulates the gradients on subsequent backward passes
                 if with_msk_channel:
                     pass
                 else:
-                    pred_road = G(temp_map_input.clone().detach(), phase == 'train')
-                    pred_road_1 = G(temp_road_input, phase == 'train')
+                    pred_road = G(temp_input_img.clone().detach(), phase == 'train')
 
-                loss_road_1 = loss_function_road_pred(pred_road, temp_map_input)
-              #  loss_road_2 = loss_function_pre_selection(pred_road, temp_style_tgt)
-              #  loss_road_3 = loss_function_road_layout(pred_road_1, temp_road)
+                loss_road_1 = F.mse_loss(temp_ground_truth, pred_road) #loss is MSE loss between GT (pre select) and prediction
                 loss_all = loss_road_1
-#TODO:FIND MORE INFO ABOUT LOSS ROADS!!!
 
                 if phase == 'train':
-                    loss_all.backward()
-                    optimizerG.step()
+                    loss_all.backward() #training routine
+                    optimizerG.step()#training routine
 
             running_loss_0 += loss_road_1.item()
-
-
-            # tensorboardX logging
-            if phase == 'train':
-                writer.add_scalar(phase+'_loss_road_0', loss_road_1.item(), epoch * len(train_set) / batch_size + i)
-
-
             # statistics
         if phase == 'train':
             running_loss_0 = running_loss_0 / len(train_set)
-
         else:
             running_loss_0 = running_loss_0 / len(val_set)
 
 
-        print(phase, running_loss_0, loss_road_1, loss_road_3)
+        print(phase, running_loss_0)
         if phase == 'val':
             writer.add_scalar(phase+'_loss_road_0', loss_road_1.item(), (epoch+1) * len(train_set) / batch_size)
 
