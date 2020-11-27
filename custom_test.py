@@ -52,7 +52,8 @@ for i, temp_batch in enumerate(test_loader):
     if i % 100 == 0:
         print('example no. ', i)
     temp_input_img = temp_batch['input'].float().to(device)
-    temp_ground_truth = temp_batch['pre_sele'].float().to(device)
+    unmasked = temp_batch['unmasked'].float().to(device)
+
     # forward
     # track history if only in train
     with torch.set_grad_enabled(False):
@@ -62,6 +63,8 @@ for i, temp_batch in enumerate(test_loader):
             pred_map = G(temp_input_img, False)
 
         # torch_img_visualization(2, [pred_map.detach(), temp_map_input.detach()])
+        io.imsave('datasets/predictions/'+result.group(1)+'/{0:06d}_gt.png'.format(i),
+                  (.cpu().numpy() * 255).astype(np.uint8).reshape((64, 64)))
         #io.imsave('datasets/predictions/'+result.group(1)+'/{0:06d}_gt.png'.format(i),
         #          (temp_ground_truth.cpu().numpy() * 255).astype(np.uint8).reshape((64, 64)))
         #io.imsave('datasets/predictions/'+result.group(1)+'/{0:06d}_input.png'.format(i),
@@ -69,10 +72,20 @@ for i, temp_batch in enumerate(test_loader):
         #io.imsave('datasets/predictions/'+result.group(1)+'/{0:06d}_pred.png'.format(i),
         #         (pred_map.cpu().numpy() * 255).astype(np.uint8).reshape((64, 64)))
         #loss_input_pred += F.mse_loss(temp_input_img, pred_map)
-        loss_gt_pred += F.mse_loss(temp_ground_truth, pred_map)
+        loss_gt_pred += F.mse_loss(unmasked, pred_map)
 print(loss_gt_pred.item()/len(test_set))
 
 #for this test show the ground truth for report
 #show 3 or 4 samples, input, prediction and gt
 #alongside we need a metric of loss (L2-metric)
 #loss_mnist_1 = F.mse_loss(temp_ground_truth, pred_mnist)
+
+#between unmasked input (modify dataloader to )
+#io.imsave the unmasked as well for clarification in the paper
+
+#1 intro
+#2 Related work
+#3 methodology (possible split)
+#4 experiment
+#5 conclusion
+

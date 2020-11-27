@@ -16,48 +16,27 @@ class PartialDataset(Dataset):
         return self.examples.shape[0]
     def __getitem__(self, item): #item = index
         input_img = self.examples[item, 1:].reshape(28, 28) / 255.
-
+        unmasked = np.copy(input_img)
         input_img[9:19, 9:19] = 0.5
         pre_sele_img = self.pre_selections[item]
         #plt.figure()
         #plt.imshow(np.squeeze(pre_sele_img))
         #plt.show()
+        unmasked = transform.resize(unmasked, (64, 64), preserve_range=True)
         input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
         pre_sele_img =  transform.resize(pre_sele_img, (64, 64), preserve_range=True)
-
+        unmasked = torch.from_numpy(np.expand_dims(unmasked, 0))
         input_img = torch.from_numpy(np.expand_dims(input_img, 0))
         pre_sele_img = torch.from_numpy(np.expand_dims(pre_sele_img, 0))
 
         example = {
                    'input': input_img, 
-                   'pre_sele': pre_sele_img
+                   'pre_sele': pre_sele_img,
+                    'unmasked': unmasked
                   }
 
         return example
 
-class PriorDataset(Dataset):
-
-    def __init__(self):
-        self.examples = np.loadtxt(experiment, delimiter=",")
-
-    def __len__(self):
-        return self.examples.shape[0]
-
-    def __getitem__(self, item):
-        input_img = self.examples[item, 1:].reshape(28, 28) / 255.
-        input_img[9:19, 9:19] = 0.5
-
-        #plt.figure()
-        #plt.imshow(np.squeeze(input_img))
-        #plt.show()
-        input_img =  transform.resize(input_img, (64, 64), preserve_range=True)
-        input_img = torch.from_numpy(np.expand_dims(input_img, 0))
-
-        example = {
-                   'prior': input_img,
-                 }
-
-        return example
 
 
 
@@ -67,7 +46,3 @@ if __name__ == '__main__':
     print(len(dataset))
     print(dataset[0]['input'])
     print(dataset[0]['pre_sele'])
-
-    dataset = PriorDataset()
-    print(len(dataset))
-    print(dataset[0]['prior'])
