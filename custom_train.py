@@ -2,21 +2,21 @@ import os
 import random
 
 import torch.optim as optim
-from tensorboardX import SummaryWriter
 from torch.optim import lr_scheduler
 
 from data_loader import *
 from nets_unet import *
 from util import *
+import re
 
 train_csv = "datasets/split/60.csv"
-train_pre = "datasets/split/preselection_top1_60.npy"
+train_pre = "datasets/split/preselection_top32_60.npy"
 validation_csv = "datasets/split/30.csv"
-validation_pre = "datasets/split/preselection_top1_30.npy"
+validation_pre = "datasets/split/preselection_top32_30.npy"
 test_csv = "datasets/split/10.csv"
-test_pre = "datasets/split/preselection_top1_10.npy"
+test_pre = "datasets/split/preselection_top32_10.npy"
 
-seed = 2
+seed = 1
 # torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.deterministic = True
 np.random.seed(seed)
@@ -29,17 +29,15 @@ with_msk_channel = False
 num_epochs = 30
 batch_size = 64
 restore = True
-checkpoint_path = 'checkpoints/checkpoint_skipconnection_trainval_seed_' + str(seed) +'.pth.tar'
+result = re.search('preselection_(.*)_', test_pre)
+checkpoint_path = 'checkpoints/checkpoint_'+  result.group(1) +'_seed_'+ str(seed) +'.pth.tar'
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-writer = SummaryWriter()
 
 
 # Define dataloaders
-road_set = PriorDataset()
-road_loader = DataLoader(road_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
-road_iter = iter(road_loader)
-
-
+mnist_set = PriorDataset()
+mnist_loader = DataLoader(mnist_set, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
+mnist_iter = iter(mnist_loader)
 
 
 ###EXPERIMENTAL
@@ -50,7 +48,6 @@ val_size = 1500 #and val sizes. Apply this later.
 train_set = train_full_set
 val_set = val_full_set
 ###EXPERIMENTAL
-
 
 
 #train_set, val_set = torch.utils.data.random_split(train_full_set, [train_size, val_size])
@@ -85,7 +82,6 @@ while epoch < num_epochs:
     # Each epoch has a training and validation phase
     for phase in ['train', 'val']:
         if phase == 'train':
-            schedulerG.step()
             G.train()  # Set model to training mode
         else:
             G.eval()  # Set model to evaluate mode
@@ -98,37 +94,37 @@ while epoch < num_epochs:
             temp_ground_truth = temp_batch['pre_sele'].float().to(device) #pre is GT
 
             try:
-                temp_road = next(road_iter)['prior'].float().to(device)
+                temp_mnist = next(mnist_iter)['prior'].float().to(device)
             except StopIteration:
-                road_iter = iter(road_loader)
-                temp_road = next(road_iter)['prior'].float().to(device)
+                mnist_iter = iter(mnist_loader)
+                temp_mnist = next(mnist_iter)['prior'].float().to(device)
 
             with torch.set_grad_enabled(phase == 'train'):
                 optimizerG.zero_grad() #we need to set the gradients to zero before starting to do backpropragation because PyTorch accumulates the gradients on subsequent backward passes
                 if with_msk_channel:
                     pass
                 else:
-                    pred_road = G(temp_input_img.clone().detach(), phase == 'train')
+                    pred_mnist = G(temp_input_img.clone().detach(), phase == 'train')
 
-                loss_road_1 = F.mse_loss(temp_ground_truth, pred_road) #loss is MSE loss between GT (pre select) and prediction
-                loss_all = loss_road_1
+                loss_mnist_1 = F.mse_loss(temp_ground_truth, pred_mnist) #loss is MSE loss between GT (pre select) and prediction
+                loss_all = loss_mnist_1
 
                 if phase == 'train':
                     loss_all.backward() #training routine
                     optimizerG.step()#training routine
 
-            running_loss_0 += loss_road_1.item()
+
+            running_loss_0 += loss_mnist_1.item()
             # statistics
         if phase == 'train':
             running_loss_0 = running_loss_0 / len(train_set)
         else:
             running_loss_0 = running_loss_0 / len(val_set)
 
-
         print(phase, running_loss_0)
-        if phase == 'val':
-            writer.add_scalar(phase+'_loss_road_0', loss_road_1.item(), (epoch+1) * len(train_set) / batch_size)
 
+    if phase == 'train':
+        schedulerG.step()
 
     # save model per epoch
     torch.save({
@@ -140,5 +136,4 @@ while epoch < num_epochs:
     print('model after %d epoch saved...' % (epoch+1))
     epoch += 1
 
-writer.close()
 
