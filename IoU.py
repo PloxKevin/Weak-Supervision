@@ -17,13 +17,11 @@ mask[9:19, 9:19] = 0
 mask = mask > 0.5
 # msk  = msk.reshape(-1)
 
-#np.random.shuffle(train_data)
 train_partial = train_data[:amount_images]
 train_prior = train_data[amount_images:2 * amount_images]
 # augment priors
 
-
-intersectionoverunion = np.zeros([train_partial.shape[0], train_prior.shape[0]])
+union = np.zeros([train_partial.shape[0], train_prior.shape[0]])
 targets = np.zeros([len(top_ranges), train_partial.shape[0], 28, 28])
 
 label_partial = train_partial[:, 0]
@@ -31,18 +29,17 @@ img_masked = train_partial[:, 1:].reshape(-1, 28, 28) > 128
 label_prior = train_prior[:, 0]
 img_prior = train_prior[:, 1:].reshape(-1, 28, 28) > 128
 
-for i in tqdm(range(img_masked.shape[0])):
+for i in tqdm(range(img_masked.shape[0])): #img_masked --> train_partial --> train_data[:5000] -->
     # print('label is', label_partial[i])
     for j in range(img_prior.shape[0]):
-        intersectionoverunion[i, j] = eval_segm.mean_IU(img_prior[j].copy().astype(np.uint8)[mask].reshape(1, -1),
-                                                        img_masked[i].copy().astype(np.uint8)[mask].reshape(1, -1))
-        #print((intersectionoverunion[i,j]))
+        union[i, j] = eval_segm.mean_IU(img_prior[j].copy().astype(np.uint8)[mask].reshape(1, -1),
+                                        img_masked[i].copy().astype(np.uint8)[mask].reshape(1, -1))
+        #print((union[i,j]))
         # plt.figure()
         # plt.imshow(img_prior[j])
         # plt.show()
     for top_range in top_ranges:
-        #np.argsort(top_ranges,intersectionoverunion)
-        top_similar = np.argpartition(intersectionoverunion[i, :].copy(), -top_range)[-top_range:]
+        top_similar = np.argpartition(union[i, :].copy(), -top_range)[-top_range:]
         target = img_prior[top_similar, :, :]
         target = np.mean(target, axis=0).astype(np.float32)
         #plt.figure()
